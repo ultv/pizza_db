@@ -1,8 +1,13 @@
 import datetime
 import sqlite3
+from os import path
 
 def get_db():
-    conn = sqlite3.connect("pizza.db")
+    #conn = sqlite3.connect("pizza.db")
+
+    ROOT = path.dirname(path.realpath(__file__))
+    conn = sqlite3.connect(path.join(ROOT, "pizza.db"))
+
     cur = conn.cursor()
     return conn, cur
 
