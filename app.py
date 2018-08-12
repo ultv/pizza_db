@@ -32,51 +32,46 @@ def order():
 
         global order_ok
 
-        if request.form.get('Додо'):
-            value = request.form['value_Додо']
+        value = request.form['Додо']
+        if int(value) > 0:
             order['pizza'].update({'Додо' : value})
             order_ok = True
 
-        if request.form.get('Итальянская'):
-            value = request.form['value_Итальянская']
+        value = request.form['Итальянская']
+        if int(value) > 0:
             order['pizza'].update({'Итальянская' : value})
             order_ok = True
 
-        if request.form.get('Мексиканская'):
-            value = request.form['value_Мексиканская']
+        value = request.form['Мексиканская']
+        if int(value) > 0:
             order['pizza'].update({'Мексиканская' : value})
             order_ok = True
 
-        if request.form.get('Пеперони'):
-            value = request.form['value_Пеперони']
+        value = request.form['Пеперони']
+        if int(value) > 0:
             order['pizza'].update({'Пеперони' : value})
             order_ok = True
 
-        if request.form.get('Супермясная'):
-            value = request.form['value_Супермясная']
+        value = request.form['Супермясная']
+        if int(value) > 0:
             order['pizza'].update({'Супермясная' : value})
             order_ok = True
 
         if order_ok:
-            if (request.form['name'] == '') or (request.form['surname'] == '') or (request.form['adress'] == '') or (request.form['phone'] == ''):
-                flash('Заполните все данные в форме заказа. И повторите выбор пиццы')
-                order_ok = False
-                return render_template('make_order.html', products=products)
-            else:
-                global num
-                num = num + 1
+            global num
+            num = num + 1
 
-                last_client_id = db.add_client(request.form['name'], request.form['surname'], request.form['adress'], request.form['phone'])
-                last_order_id = db.add_order(last_client_id, "Поступил")
+            last_client_id = db.add_client(request.form['name'], request.form['surname'], request.form['adress'], request.form['phone'])
+            last_order_id = db.add_order(last_client_id, "Поступил")
 
-                for pizza_name, pizza_value in order['pizza'].items():
-                    db.add_pizza(last_order_id, pizza_name, pizza_value)
+            for pizza_name, pizza_value in order['pizza'].items():
+                db.add_pizza(last_order_id, pizza_name, pizza_value)
 
-                flash('{}, Ваш заказ принят. Менеджер перезвонит на номер {}.'.format(order['client']['name'], order['client']['phone']))
-                order_ok = False
-                return redirect(url_for('index'))
+            flash('{}, Ваш заказ принят. Менеджер перезвонит на номер {}.'.format(order['client']['name'], order['client']['phone']))
+            order_ok = False
+            return redirect(url_for('index'))
         else:
-            flash('Необходимо выбрать пиццу для заказа.')
+            flash('Необходимо указать количество выбранный пиццы для заказа.')
             return render_template('make_order.html', products=products)
     else:
         return render_template('make_order.html', products = products)
