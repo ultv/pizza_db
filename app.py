@@ -31,31 +31,13 @@ def order():
         }
 
         global order_ok
+        assorts = ['Додо', 'Итальянская', 'Мексиканская', 'Пеперони', 'Супермясная']
 
-        value = request.form['Додо']
-        if int(value) > 0:
-            order['pizza'].update({'Додо' : value})
-            order_ok = True
-
-        value = request.form['Итальянская']
-        if int(value) > 0:
-            order['pizza'].update({'Итальянская' : value})
-            order_ok = True
-
-        value = request.form['Мексиканская']
-        if int(value) > 0:
-            order['pizza'].update({'Мексиканская' : value})
-            order_ok = True
-
-        value = request.form['Пеперони']
-        if int(value) > 0:
-            order['pizza'].update({'Пеперони' : value})
-            order_ok = True
-
-        value = request.form['Супермясная']
-        if int(value) > 0:
-            order['pizza'].update({'Супермясная' : value})
-            order_ok = True
+        for assort in assorts:
+            value = request.form[assort]
+            if int(value) > 0:
+                order['pizza'].update({assort : value})
+                order_ok = True
 
         if order_ok:
             global num
@@ -71,7 +53,7 @@ def order():
             order_ok = False
             return redirect(url_for('index'))
         else:
-            flash('Необходимо указать количество выбранный пиццы для заказа.')
+            flash('Необходимо указать количество выбранной пиццы для заказа.')
             return render_template('make_order.html', products=products)
     else:
         return render_template('make_order.html', products = products)
@@ -80,9 +62,13 @@ def order():
 def orders_list():
     if request.method == 'POST':
         splitted_status = request.form.get('select_status').split("-")
-        db.update_status(splitted_status[0], splitted_status[1])
 
-        return render_template('orders.html', orders = db.get_order())
+        if splitted_status[1] == 'Удалить':
+            db.del_order(splitted_status[0])
+            return render_template('orders.html', orders=db.get_order())
+        else:
+            db.update_status(splitted_status[0], splitted_status[1])
+            return render_template('orders.html', orders = db.get_order())
     else:
         return render_template('orders.html', orders = db.get_order())
 
