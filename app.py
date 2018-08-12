@@ -65,12 +65,13 @@ def orders_list():
 
         if splitted_status[1] == 'Удалить':
             db.del_order(splitted_status[0])
-            return render_template('orders.html', orders=db.get_order())
+            flash('Заказ№{} удален.'.format(splitted_status[0]))
+            return render_template('orders.html', orders=db.get_orders())
         else:
             db.update_status(splitted_status[0], splitted_status[1])
-            return render_template('orders.html', orders = db.get_order())
+            return render_template('orders.html', orders = db.get_orders())
     else:
-        return render_template('orders.html', orders = db.get_order())
+        return render_template('orders.html', orders = db.get_orders())
 
 @app.route('/contacts/')
 def contacts():

@@ -98,7 +98,7 @@ def del_order(order_id):
     conn.commit()
 
 
-def get_order():
+def get_orders():
     conn, cur = get_db()
 
     order_rows = cur.execute(
@@ -123,6 +123,28 @@ def get_order():
         orders.update({order_row[0]: order})
 
     return orders
+
+def get_order(order_id):
+    conn, cur = get_db()
+
+    order_row = cur.execute(
+        'SELECT id, client_id, status, date FROM orders WHERE id =?', [order_id]).fetchone()
+
+    client_id = order_row[1]
+    client = get_client(client_id)
+    pizza = get_pizza(order_row[0])
+    order = {
+        'client': {
+            'name': client['name'],
+            'surname': client['surname'],
+            'adress': client['adress'],
+            'phone': client['phone']
+        },
+        'pizza': pizza,
+        'status': {order_row[2]: order_row[3]}
+    }
+
+    return order
 
 
 def get_client(client_id):
