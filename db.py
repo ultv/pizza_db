@@ -2,6 +2,7 @@ import datetime
 import sqlite3
 from os import path
 
+
 def get_db():
     #conn = sqlite3.connect("pizza.db")
 
@@ -10,6 +11,7 @@ def get_db():
 
     cur = conn.cursor()
     return conn, cur
+
 
 def get_products():
     conn, cur = get_db()
@@ -43,6 +45,7 @@ def add_client(name, surname, adress, phone):
     conn.commit()
     return cur.lastrowid
 
+
 def add_pizza(order_id, name, value):
     conn, cur = get_db()
 
@@ -53,6 +56,7 @@ def add_pizza(order_id, name, value):
 
     conn.commit()
     return cur.lastrowid
+
 
 def add_order(client_id, status):
     conn, cur = get_db()
@@ -65,7 +69,36 @@ def add_order(client_id, status):
     conn.commit()
     return cur.lastrowid
 
-def get_order():
+
+def get_client_id(order_id):
+    conn, cur = get_db()
+    ids = cur.execute('SELECT client_id FROM orders WHERE id =?', [order_id]).fetchone()
+
+    return ids[0]
+
+
+def del_order(order_id):
+    conn, cur = get_db()
+
+    cur.execute(
+        'DELETE FROM pizza WHERE order_id = ?',
+        [order_id]
+    )
+
+    cur.execute(
+        'DELETE FROM client WHERE id = ?',
+        [get_client_id(order_id)]
+    )
+
+    cur.execute(
+        'DELETE FROM orders WHERE id = ?',
+        [order_id]
+    )
+
+    conn.commit()
+
+
+def get_orders():
     conn, cur = get_db()
 
     order_rows = cur.execute(
@@ -91,6 +124,29 @@ def get_order():
 
     return orders
 
+def get_order(order_id):
+    conn, cur = get_db()
+
+    order_row = cur.execute(
+        'SELECT id, client_id, status, date FROM orders WHERE id =?', [order_id]).fetchone()
+
+    client_id = order_row[1]
+    client = get_client(client_id)
+    pizza = get_pizza(order_row[0])
+    order = {
+        'client': {
+            'name': client['name'],
+            'surname': client['surname'],
+            'adress': client['adress'],
+            'phone': client['phone']
+        },
+        'pizza': pizza,
+        'status': {order_row[2]: order_row[3]}
+    }
+
+    return order
+
+
 def get_client(client_id):
     conn, cur = get_db()
 
@@ -105,6 +161,7 @@ def get_client(client_id):
     }
 
     return client
+
 
 def get_pizza(order_id):
     conn, cur = get_db()

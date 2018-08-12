@@ -31,52 +31,29 @@ def order():
         }
 
         global order_ok
+        assorts = ['Додо', 'Итальянская', 'Мексиканская', 'Пеперони', 'Супермясная']
 
-        if request.form.get('Додо'):
-            value = request.form['value_Додо']
-            order['pizza'].update({'Додо' : value})
-            order_ok = True
-
-        if request.form.get('Итальянская'):
-            value = request.form['value_Итальянская']
-            order['pizza'].update({'Итальянская' : value})
-            order_ok = True
-
-        if request.form.get('Мексиканская'):
-            value = request.form['value_Мексиканская']
-            order['pizza'].update({'Мексиканская' : value})
-            order_ok = True
-
-        if request.form.get('Пеперони'):
-            value = request.form['value_Пеперони']
-            order['pizza'].update({'Пеперони' : value})
-            order_ok = True
-
-        if request.form.get('Супермясная'):
-            value = request.form['value_Супермясная']
-            order['pizza'].update({'Супермясная' : value})
-            order_ok = True
+        for assort in assorts:
+            value = request.form[assort]
+            if int(value) > 0:
+                order['pizza'].update({assort : value})
+                order_ok = True
 
         if order_ok:
-            if (request.form['name'] == '') or (request.form['surname'] == '') or (request.form['adress'] == '') or (request.form['phone'] == ''):
-                flash('Заполните все данные в форме заказа. И повторите выбор пиццы')
-                order_ok = False
-                return render_template('make_order.html', products=products)
-            else:
-                global num
-                num = num + 1
+            global num
+            num = num + 1
 
-                last_client_id = db.add_client(request.form['name'], request.form['surname'], request.form['adress'], request.form['phone'])
-                last_order_id = db.add_order(last_client_id, "Поступил")
+            last_client_id = db.add_client(request.form['name'], request.form['surname'], request.form['adress'], request.form['phone'])
+            last_order_id = db.add_order(last_client_id, "Поступил")
 
-                for pizza_name, pizza_value in order['pizza'].items():
-                    db.add_pizza(last_order_id, pizza_name, pizza_value)
+            for pizza_name, pizza_value in order['pizza'].items():
+                db.add_pizza(last_order_id, pizza_name, pizza_value)
 
-                flash('{}, Ваш заказ принят. Менеджер перезвонит на номер {}.'.format(order['client']['name'], order['client']['phone']))
-                order_ok = False
-                return redirect(url_for('index'))
+            flash('{}, Ваш заказ принят. Менеджер перезвонит на номер {}.'.format(order['client']['name'], order['client']['phone']))
+            order_ok = False
+            return redirect(url_for('index'))
         else:
-            flash('Необходимо выбрать пиццу для заказа.')
+            flash('Необходимо указать количество выбранной пиццы для заказа.')
             return render_template('make_order.html', products=products)
     else:
         return render_template('make_order.html', products = products)
@@ -85,11 +62,16 @@ def order():
 def orders_list():
     if request.method == 'POST':
         splitted_status = request.form.get('select_status').split("-")
-        db.update_status(splitted_status[0], splitted_status[1])
 
-        return render_template('orders.html', orders = db.get_order())
+        if splitted_status[1] == 'Удалить':
+            db.del_order(splitted_status[0])
+            flash('Заказ№{} удален.'.format(splitted_status[0]))
+            return render_template('orders.html', orders=db.get_orders())
+        else:
+            db.update_status(splitted_status[0], splitted_status[1])
+            return render_template('orders.html', orders = db.get_orders())
     else:
-        return render_template('orders.html', orders = db.get_order())
+        return render_template('orders.html', orders = db.get_orders())
 
 @app.route('/contacts/')
 def contacts():
